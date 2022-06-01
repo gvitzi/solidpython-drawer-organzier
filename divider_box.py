@@ -21,8 +21,6 @@ add_labels = True
 label_w = 20
 label_h = 6
 
-fn = 64
-
 def corners(x1,y1):
     r = corner_radius
     
@@ -53,7 +51,7 @@ def create_labels():
     if not add_labels:
         return union()
     label_objs = union()
-    for div_y in range(0, y, divider_spacing_y):
+    for div_y in range(0, y-divider_spacing_y+1, divider_spacing_y):
         for div_x in range(0, x - label_w, divider_spacing_x):
             label_objs += translate([div_y,-x/2 + divider_spacing_x/2 + div_x,0])(label())
     return label_objs
@@ -71,7 +69,9 @@ def dividers(h):
 
 def divider_y(h=z):
     l = x-wall_thickness
-    return translate([0,-wall_thickness/2,wall_thickness])(cube([wall_thickness,l,h-wall_thickness]))
+    # we add 0.1 to the height and lower the divider -0.1 into the floor
+    # This is to prevent the divider from disconnecting from the floor after the print is ready
+    return translate([0,-wall_thickness/2,wall_thickness-0.1])(cube([wall_thickness,l,h+0.1-wall_thickness]))
 
 
 def divider_x(h=z):
@@ -91,13 +91,14 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description='Generate SCAD file for a drawer organizer divider box')
     parser.add_argument('-s','--size', required=True ,type=str, help='The size of the frame in x,y milimeters. format {x}x{y}x{z} e.g: 100x100 or 150x200x50')
     parser.add_argument('-l','--layout', required=True, type=str, help='The cells layout. format {x_cells}x{y_cells} e.g: 1x2 or 4x4')
-    parser.add_argument('--labels', action='store_true', help='If given will add a panel for label for each cell in the layout')
+    parser.add_argument('--no-labels', action='store_true', help='If given will add a panel for label for each cell in the layout')
     parser.add_argument('--label-size', type=str, help='The size of the label. format {w}x{h} e.g 20x8 default 20x6', default="20x6")
     parser.add_argument('--corner-radius', type=int, help='Corner radius in milimeters', default=2)
+    parser.add_argument('--smooth', type=int, help='The number of segments for the corner radius. e.g --smooth 128', default=64)
 
     args = parser.parse_args()
     
-    global x,y,z,divider_spacing_x,divider_spacing_y, show_labels,label_w,label_h,corner_radius
+    global x,y,z,divider_spacing_x,divider_spacing_y, add_labels,label_w,label_h,corner_radius, corner_radius_segments
     size_sections = args.size.split('x')
     if len(size_sections) == 3:
         x,y,z = size_sections
@@ -113,13 +114,14 @@ def parse_arguments():
 
     divider_spacing_x = int(x / int(x_cells))
     divider_spacing_y = int(y / int(y_cells))
-    show_labels = args.labels
+    add_labels = not args.no_labels
     label_w,label_h = args.label_size.split('x')
     label_w = int(label_w)
     label_h = int(label_h)
     corner_radius = args.corner_radius
+    corner_radius_segments = args.smooth
 
-    print(f'size: {x}x{y}x{z}\nlayout {x_cells}x{y_cells}\ncell x,y: {divider_spacing_x},{divider_spacing_y}\nlabels: {show_labels} w,h {label_w},{label_h}')
+    print(f'size: {x}x{y}x{z}\nlayout {x_cells}x{y_cells}\ncell x,y: {divider_spacing_x},{divider_spacing_y}\nlabels: {add_labels} w,h {label_w},{label_h}')
 if __name__ == '__main__':
     parse_arguments()
     obj = box()
