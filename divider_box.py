@@ -82,13 +82,11 @@ def divider_x(h=z):
 def box():
     return frame() + create_labels() + dividers(z)
 
-def usage():
-    print(f'usage: {sys.argv[0]} 100x200x30 2x4')
-
-
 def parse_arguments():
     import argparse
     parser = argparse.ArgumentParser(description='Generate SCAD file for a drawer organizer divider box')
+    parser.add_argument('-o','--output', type=str, help='A filename for the output .scad e.g. --output ./box_100x100.scad', default='box_generated.scad')
+    parser.add_argument('-',dest='print_to_stdout', action='store_true', help='print output to stdout')
     parser.add_argument('-s','--size', required=True ,type=str, help='The size of the frame in x,y milimeters. format {x}x{y}x{z} e.g: 100x100 or 150x200x50')
     parser.add_argument('-l','--layout', required=True, type=str, help='The cells layout. format {x_cells}x{y_cells} e.g: 1x2 or 4x4')
     parser.add_argument('--no-labels', action='store_true', help='If given will add a panel for label for each cell in the layout')
@@ -106,6 +104,7 @@ def parse_arguments():
         x,y = size_sections
     else:
         print("wrong format for size")
+        sys.exit(2)
 
     x = int(x)
     y = int(y)
@@ -121,12 +120,21 @@ def parse_arguments():
     corner_radius = args.corner_radius
     corner_radius_segments = args.smooth
 
-    print(f'size: {x}x{y}x{z}\nlayout {x_cells}x{y_cells}\ncell x,y: {divider_spacing_x},{divider_spacing_y}\nlabels: {add_labels} w,h {label_w},{label_h}')
+    return args, x_cells, y_cells
+
+def log(line):
+    if not args.print_to_stdout:
+        print(line)
+
 if __name__ == '__main__':
-    parse_arguments()
+    args, x_cells, y_cells = parse_arguments()
     obj = box()
-    scad_render_to_file(obj, 'divider_box_generated.scad')
-
-
-
+    if args.print_to_stdout:
+        scad_text = scad_render(obj)
+        print(scad_text)
+    else:
+        log(f'size: {x}x{y}x{z}')
+        log(f'layout: {x_cells}x{y_cells}\tcell: {divider_spacing_x}x{divider_spacing_y}')
+        log('labels: {}'.format(f'{label_w}x{label_h}' if add_labels else 'No Labels'))
+        scad_render_to_file(obj, args.output)
 
