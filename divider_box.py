@@ -11,7 +11,7 @@ z = 30
 divider_spacing_y = 100
 divider_spacing_x = 50
 
-corner_radius = 2
+corner_radius = 1
 corner_radius_segments = 24
 
 wall_thickness = 0.9
@@ -93,7 +93,7 @@ def parse_arguments():
     parser.add_argument('-l','--layout', required=True, type=str, help='The cells layout. format {x_cells}x{y_cells} e.g: 1x2 or 4x4')
     parser.add_argument('--no-labels', action='store_true', help='If given will add a panel for label for each cell in the layout')
     parser.add_argument('--label-size', type=str, help='The size of the label. format {w}x{h} e.g 20x8 default 20x6', default="20x6")
-    parser.add_argument('--corner-radius', type=int, help='Corner radius in milimeters', default=2)
+    parser.add_argument('--corner-radius', type=int, help='Corner radius in milimeters', default=1)
     parser.add_argument('--smooth', type=int, help='The number of segments for the corner radius. e.g --smooth 128', default=64)
 
     args = parser.parse_args()
